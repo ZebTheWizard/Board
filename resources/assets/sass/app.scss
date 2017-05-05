@@ -7,3 +7,10 @@
 
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+.color-swap {
+    position: absolute !important;
+    left: 40px;
+    top: -18px;
+    transform: scale(0.5);
+}

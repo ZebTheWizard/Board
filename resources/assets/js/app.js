@@ -8,15 +8,73 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+import VueSocketio from 'vue-socket.io';
 
+Vue.use(VueSocketio, window.socketURL);
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('example', require('./components/Example.vue'));
+Vue.component('board', require('./components/Board.vue'));
+Vue.component('picker', require('./components/Picker.vue'));
+
+Vue.directive('drag', {
+  bind: (el, binding, vnode) => {
+    var obj = vnode.context
+    el.addEventListener("mousedown", dragStart,true);
+
+    function dragStart(e) {
+      if (typeof obj.dragStart == 'function') obj.dragStart(e)
+
+      el.addEventListener("mousemove",dragging,true);
+      window.addEventListener("mouseup",dragEnd,true);
+    }
+    function dragging(e) {
+      binding.value(e)
+    }
+    function dragEnd(e){
+      if (typeof obj.dragEnd == 'function') obj.dragEnd(e)
+      el.removeEventListener("mousemove", dragging ,true);
+      window.removeEventListener("mouseup", dragEnd ,true);
+    }
+
+
+
+
+
+
+
+
+
+  }
+})
+
 
 const app = new Vue({
-    el: '#app'
+    el: '#app',
+    data: {
+      lastUsedId: 1,
+      color: {
+        selected: '#000',
+        primary: '#000',
+        secondary: '#fff'
+      }
+    },
+    methods: {
+      updateColor: function (color, type) {
+        if (type == 'primary'){
+          this.color.primary = color
+          this.color.selected = color
+        }else{
+          this.color.secondary = color
+        }
+      },
+      swapColor: function (){
+        this.color.selected = this.color.secondary
+        this.color.secondary = this.color.primary
+        this.color.primary = this.color.selected
+      }
+    }
 });

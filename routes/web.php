@@ -14,3 +14,12 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/board/create', 'boardController@create');
+Route::post('/board/save', 'boardController@save');
+Route::get('/{owner}/{id}', 'boardController@get');
+
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
