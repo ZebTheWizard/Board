@@ -7,17 +7,15 @@
             <div class="panel panel-default">
                 <div class="panel-heading">Dashboard</div>
 
-                <div class="panel-body">
-                    You are logged in!
+                <div class="module-wrapper">
+                  <module v-for="(board, index) in boards"
+                          :obj="board"
+                          v-on:remove="boards.splice(index,1)"></module>
+                  <module></module>
                 </div>
-
-                <picker :hex="color.primary" type="primary" v-on:updatecolor="updateColor"></picker>
-                <picker :hex="color.secondary" type="secondary" v-on:updatecolor="updateColor"></picker>
-                <board ></board>
-                <board ></board>
-                <board ></board>
             </div>
         </div>
+
     </div>
 </div>
 @endsection

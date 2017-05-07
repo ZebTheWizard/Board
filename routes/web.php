@@ -14,12 +14,20 @@
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/image/blank.png', function() {
+  return Image::canvas(1, 1, 'rgba(0, 0, 0, 0)')->response('png');
+});
 
-Route::get('/board/create', 'boardController@create');
+Route::post('/board/create', 'boardController@create');
 Route::post('/board/save', 'boardController@save');
+Route::post('/board/delete', 'boardController@delete');
+Route::post('/boards/get', 'boardController@boards');
+Route::post('/share', 'boardController@share');
+
+Route::get('/join/{username}/{share}', 'boardController@join');
 Route::get('/{owner}/{id}', 'boardController@get');
 
 
 Auth::routes();
-
+Route::get('/i/{username}/{uuid}', 'boardController@imageAPI');
 Route::get('/home', 'HomeController@index')->name('home');

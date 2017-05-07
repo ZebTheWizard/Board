@@ -18,11 +18,14 @@ Vue.use(VueSocketio, window.socketURL);
  */
 
 Vue.component('board', require('./components/Board.vue'));
+Vue.component('module', require('./components/Module.vue'));
 Vue.component('picker', require('./components/Picker.vue'));
 
 Vue.directive('drag', {
   bind: (el, binding, vnode) => {
+
     var obj = vnode.context
+
     el.addEventListener("mousedown", dragStart,true);
 
     function dragStart(e) {
@@ -41,13 +44,6 @@ Vue.directive('drag', {
     }
 
 
-
-
-
-
-
-
-
   }
 })
 
@@ -59,8 +55,26 @@ const app = new Vue({
       color: {
         selected: '#000',
         primary: '#000',
-        secondary: '#fff'
-      }
+        secondary: '#fff',
+      },
+      mode: 'paint',
+      toolbarOffset: 0,
+      toolbarIsOpen: true,
+      toolbarWidth: 100,
+      boards: {}
+    },
+    mounted() {
+      this.resize();
+      axios.post('/boards/get').then(response => {
+        console.log(response);
+        this.boards = response.data['boards']
+      })
+      this.$nextTick(function() {
+        window.addEventListener('resize', this.resize)
+        $('#mode-'+this.mode).addClass('selected')
+
+
+      })
     },
     methods: {
       updateColor: function (color, type) {
@@ -75,6 +89,37 @@ const app = new Vue({
         this.color.selected = this.color.secondary
         this.color.secondary = this.color.primary
         this.color.primary = this.color.selected
+      },
+      setMode: function (mode) {
+        this.mode = mode;
+        $('.toolbar .section').removeClass('selected')
+        $('#mode-' + mode).addClass('selected')
+        if (mode == 'share') {
+          socket.emit('send:share');
+        }
+      },
+      toggleToolbar: function (option=null) {
+        this.toolbarIsOpen = !this.toolbarIsOpen
+      },
+      resize: function () {
+        var w = document.body.clientWidth
+
+        if( w < 752 ) {
+          this.toolbarIsOpen = false
+          this.toolbarOffset = 0
+        }else {
+          this.toolbarIsOpen = true
+          this.toolbarOffset = this.toolbarWidth
+        }
+
+
+        if ($('#navbar-toolbar-caller').length) {
+          $('#navbar-toolbar-toggle').hide()
+        }
+        // console.log();
       }
+    },
+    computed: {
+      csrf: function () { return window.Laravel.csrfToken }
     }
 });

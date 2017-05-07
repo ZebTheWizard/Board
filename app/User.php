@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -14,6 +15,8 @@ class User extends Authenticatable
      *
      * @var array
      */
+   use SoftDeletes;
+   protected $dates = ['deleted_at'];
     protected $fillable = [
         'username', 'email', 'password',
     ];
@@ -30,4 +33,10 @@ class User extends Authenticatable
     public static function search($user){
       return User::where('username', $user)->firstOrFail();
     }
+
+    public function boards() {
+      return $this->belongsToMany('App\Board')->withPivot('isOwner', 'canEdit')->withTrashed();
+    }
+
+
 }

@@ -16,13 +16,16 @@ class CreateBoardsTable extends Migration
         Schema::create('boards', function (Blueprint $table) {
           $table->increments('id');
           $u = $table->uuid('uuid')->unique();
+          $u->collation = 'utf8_bin';
+          $u = $table->uuid('share')->unique();
+          $u->collation = 'utf8_bin';
           $table->integer('owner');
-          $table->string('name')->nullable();
+          $table->string('name');
           $table->string('image')->default('/image/blank.png');
 
           $table->timestamps();
           $table->softDeletes();
-          $u->collation = 'utf8_bin';
+
           // $table->primary('id');
         });
     }
