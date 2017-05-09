@@ -865,13 +865,23 @@ Vue.directive('drag', {
 
     var obj = vnode.context;
 
-    el.addEventListener("mousedown", dragStart, true);
+    el.bind = function () {
+      el.addEventListener("mousedown", dragStart, true);
+      el.addEventListener("touchstart", dragStart, true);
+    };
+
+    el.unbind = function () {
+      el.removeEventListener('mousedown', dragStart, true);
+      el.removeEventListener('touchstart', dragStart, true);
+    };
 
     function dragStart(e) {
       if (typeof obj.dragStart == 'function') obj.dragStart(e);
 
       el.addEventListener("mousemove", dragging, true);
+      el.addEventListener("touchmove", dragging, true);
       window.addEventListener("mouseup", dragEnd, true);
+      window.addEventListener("touchend", dragEnd, true);
     }
     function dragging(e) {
       binding.value(e);
@@ -879,7 +889,9 @@ Vue.directive('drag', {
     function dragEnd(e) {
       if (typeof obj.dragEnd == 'function') obj.dragEnd(e);
       el.removeEventListener("mousemove", dragging, true);
+      el.removeEventListener("touchmove", dragging, true);
       window.removeEventListener("mouseup", dragEnd, true);
+      window.removeEventListener("touchend", dragEnd, true);
     }
   }
 });
@@ -904,7 +916,6 @@ var app = new Vue({
 
     this.resize();
     axios.post('/boards/get').then(function (response) {
-      console.log(response);
       _this.boards = response.data['boards'];
     });
     this.$nextTick(function () {
@@ -1899,8 +1910,7 @@ var move = __webpack_require__(34);
       share: {
         temp: '',
         forever: ''
-      },
-      preventedEdit: false
+      }
     };
   },
   mounted: function mounted() {
@@ -1908,21 +1918,24 @@ var move = __webpack_require__(34);
     this.id = this._uid;
     self = this;
     self.updateCanvas();
-    self.resize();
     self.redraw(this.blade.data);
 
+    // console.log(self.canvas.bind);
+
     self.$nextTick(function () {
-      window.addEventListener('resize', self.resize);
+      window.addEventListener('resize', self.resize, false);
+      window.addEventListener('orientationchange', self.resize, false);
+      self.resize();
     });
 
-    socket.on('paint:Start:' + self.public.channel, function (data) {
-      self.dragStart(false, data);
+    socket.on('paint:Start:' + self.public.channel, function (io) {
+      paint.Start(self, false, io);
     });
-    socket.on('paint:ing:' + self.public.channel, function (data) {
-      self.dragging(false, data);
+    socket.on('paint:ing:' + self.public.channel, function (io) {
+      paint.ing(self, false, io);
     });
-    socket.on('paint:End:' + self.public.channel, function (data) {
-      self.dragEnd(false, data);
+    socket.on('paint:End:' + self.public.channel, function (io) {
+      paint.End(self, false, io);
     });
     socket.on('show:share', self.toggleShare);
   },
@@ -1961,17 +1974,17 @@ var move = __webpack_require__(34);
         self.canvas = document.getElementById('canvas-' + self.id);
       }
 
-      if (!self.blade.edit && !self.preventedEdit) {
-        var new_canvas = self.canvas.cloneNode(true);
-        self.canvas.parentNode.replaceChild(new_canvas, self.canvas);
-        self.canvas = new_canvas;
-        self.preventedEdit = true;
-      }
-
+      //get context and canvas el
       self.ctx = self.getContext(self.canvas);
-
       self.camera.canvas = document.getElementById('camera-' + self.id);
       self.camera.ctx = self.getContext(self.camera.canvas);
+
+      //Bind or unbind canvas based on permissions
+      if (self.blade.edit) {
+        self.canvas.bind();
+      } else {
+        self.canvas.unbind();
+      }
     },
 
     resize: function resize() {
@@ -1982,38 +1995,35 @@ var move = __webpack_require__(34);
       if (self.data) {
         self.data = self.camera.canvas.toDataURL('image/png');
         self.redraw(self.data);
-      } else {
-        self.redraw(self.blade.data);
       }
     },
 
     dragStart: function dragStart(e) {
       var io = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-      // if (self.blade.edit) {
+      if (self.$parent.mode != 'pan') e.preventDefault();
       if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.Start(self, e, io);
       if (self.$parent.mode == 'move') move.Start(self, e, io);
-      // }
     },
     dragging: function dragging(e) {
       var io = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-      // if (self.blade.edit) {
+      if (self.$parent.mode != 'pan') e.preventDefault();
       if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.ing(self, e, io);
       if (self.$parent.mode == 'move') move.ing(self, e, io);
-      // }
     },
     dragEnd: function dragEnd(e) {
       var io = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-      // if (self.blade.edit) {
       if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.End(self, e, io);
       if (self.$parent.mode == 'move') move.End(self, e, io);
-      // }
     },
     redraw: function redraw(source) {
-
-      self.Clear();
+      // if (self.data.length > 0) {
+      //   self.ctx.putImageData(source, self.camera.x, self.camera.y)
+      //   self.camera.ctx.putImageData(source, 0, 0)
+      // }
+      // else
       if (this.blade.data.length > 0) {
         img.onload = function () {
           self.ctx.drawImage(img, self.camera.x, self.camera.y);
@@ -2297,7 +2307,6 @@ module.exports = {
   Start: function Start(self, e) {
     var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    console.log(e);
     if (io) {
       self.public.x = io.x;
       self.public.y = io.y;
@@ -2306,8 +2315,16 @@ module.exports = {
       self.updateCanvas(e, io);
     } else {
       self.updateCanvas(e, io);
-      self.public.x = e.offsetX;
-      self.public.y = e.offsetY;
+
+      if (e.type == 'mousedown') {
+        self.public.x = e.offsetX;
+        self.public.y = e.offsetY;
+      } else {
+        var offset = $(self.canvas).offset();
+        self.public.x = e.touches[0].pageX - offset.left;
+        self.public.y = e.touches[0].pageY - offset.top;
+      }
+
       socket.emit('send:paint:Start', self.public);
     }
 
@@ -2316,7 +2333,6 @@ module.exports = {
     } else if (self.$parent.mode == 'erase') {
       self.public.blendMode = 'destination-out';
     }
-
     self.ctx.beginPath();
     self.ctx.moveTo(self.public.x, self.public.y);
 
@@ -2332,8 +2348,14 @@ module.exports = {
       self.ctx.globalCompositeOperation = io.blendMode;
       self.camera.ctx.globalCompositeOperation = io.blendMode;
     } else {
-      self.public.x = e.offsetX;
-      self.public.y = e.offsetY;
+      if (e.type == 'mousemove') {
+        self.public.x = e.offsetX;
+        self.public.y = e.offsetY;
+      } else {
+        var offset = $(self.canvas).offset();
+        self.public.x = e.touches[0].pageX - offset.left;
+        self.public.y = e.touches[0].pageY - offset.top;
+      }
       socket.emit('send:paint:ing', self.public);
     }
 
@@ -32574,10 +32596,7 @@ if (false) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', [_c('div', {
-    staticClass: "canvas-wrapper",
-    style: ({
-      height: _vm.cssHeight + 'px'
-    })
+    staticClass: "canvas-wrapper"
   }, [(!_vm.blade.edit) ? _c('div', {
     staticClass: "alert alert-warning alert-dismissible",
     attrs: {

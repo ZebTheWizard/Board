@@ -26,13 +26,24 @@ Vue.directive('drag', {
 
     var obj = vnode.context
 
-    el.addEventListener("mousedown", dragStart,true);
+    el.bind = function () {
+      el.addEventListener("mousedown", dragStart, true);
+      el.addEventListener("touchstart", dragStart, true);
+    }
+
+    el.unbind = function () {
+      el.removeEventListener('mousedown', dragStart, true)
+      el.removeEventListener('touchstart', dragStart, true)
+    }
+
 
     function dragStart(e) {
       if (typeof obj.dragStart == 'function') obj.dragStart(e)
 
       el.addEventListener("mousemove",dragging,true);
+      el.addEventListener("touchmove",dragging,true);
       window.addEventListener("mouseup",dragEnd,true);
+      window.addEventListener("touchend",dragEnd,true);
     }
     function dragging(e) {
       binding.value(e)
@@ -40,7 +51,9 @@ Vue.directive('drag', {
     function dragEnd(e){
       if (typeof obj.dragEnd == 'function') obj.dragEnd(e)
       el.removeEventListener("mousemove", dragging ,true);
+      el.removeEventListener("touchmove", dragging ,true);
       window.removeEventListener("mouseup", dragEnd ,true);
+      window.removeEventListener("touchend", dragEnd ,true);
     }
 
 
@@ -66,14 +79,11 @@ const app = new Vue({
     mounted() {
       this.resize();
       axios.post('/boards/get').then(response => {
-        console.log(response);
         this.boards = response.data['boards']
       })
       this.$nextTick(function() {
         window.addEventListener('resize', this.resize)
         $('#mode-'+this.mode).addClass('selected')
-
-
       })
     },
     methods: {

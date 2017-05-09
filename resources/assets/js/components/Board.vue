@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="canvas-wrapper" :style="{height: cssHeight+'px'}">
+        <div class="canvas-wrapper" >
 
           <div class="alert alert-warning alert-dismissible" role="alert" v-if="!blade.edit">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -80,8 +80,7 @@
             share: {
               temp: '',
               forever: '',
-            },
-            preventedEdit: false
+            }
           }
         },
         mounted() {
@@ -89,21 +88,24 @@
             this.id = this._uid
             self = this
             self.updateCanvas()
-            self.resize();
             self.redraw(this.blade.data);
 
+            // console.log(self.canvas.bind);
+
             self.$nextTick(function() {
-              window.addEventListener('resize', self.resize)
+              window.addEventListener('resize', self.resize, false)
+              window.addEventListener('orientationchange', self.resize, false)
+              self.resize();
             })
 
-            socket.on(`paint:Start:${self.public.channel}`, function (data) {
-              self.dragStart(false, data)
+            socket.on(`paint:Start:${self.public.channel}`, function (io) {
+              paint.Start(self, false, io)
             })
-            socket.on(`paint:ing:${self.public.channel}`, function (data) {
-              self.dragging(false, data)
+            socket.on(`paint:ing:${self.public.channel}`, function (io) {
+              paint.ing(self, false, io)
             })
-            socket.on(`paint:End:${self.public.channel}`, function (data) {
-              self.dragEnd(false, data)
+            socket.on(`paint:End:${self.public.channel}`, function (io) {
+              paint.End(self, false, io)
             })
             socket.on(`show:share`, self.toggleShare)
         },
@@ -138,18 +140,17 @@
               self.canvas = document.getElementById('canvas-' + self.id)
             }
 
-            if (!self.blade.edit && !self.preventedEdit){
-              var new_canvas = self.canvas.cloneNode(true)
-              self.canvas.parentNode.replaceChild(new_canvas, self.canvas)
-              self.canvas = new_canvas
-              self.preventedEdit = true
-            }
-
-
+            //get context and canvas el
             self.ctx = self.getContext(self.canvas)
-
             self.camera.canvas = document.getElementById('camera-' + self.id)
             self.camera.ctx = self.getContext(self.camera.canvas)
+
+            //Bind or unbind canvas based on permissions
+            if (self.blade.edit) {
+              self.canvas.bind()
+            } else {
+              self.canvas.unbind()
+            }
           },
 
           resize: function(){
@@ -160,32 +161,29 @@
             if (self.data) {
               self.data = self.camera.canvas.toDataURL('image/png')
               self.redraw(self.data);
-            }else {
-              self.redraw(self.blade.data)
             }
           },
 
           dragStart: function (e, io=null) {
-            // if (self.blade.edit) {
+              if (self.$parent.mode != 'pan') e.preventDefault()
               if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.Start(self, e, io)
               if (self.$parent.mode == 'move') move.Start(self, e, io)
-            // }
           },
           dragging: function (e, io=null) {
-            // if (self.blade.edit) {
+              if (self.$parent.mode != 'pan') e.preventDefault()
               if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.ing(self, e, io)
               if (self.$parent.mode == 'move') move.ing(self, e, io)
-            // }
           },
           dragEnd: function (e, io=null) {
-            // if (self.blade.edit) {
               if (self.$parent.mode == 'paint' || self.$parent.mode == 'erase') paint.End(self, e, io)
               if (self.$parent.mode == 'move') move.End(self, e, io)
-            // }
           },
           redraw: function (source) {
-
-            self.Clear()
+            // if (self.data.length > 0) {
+            //   self.ctx.putImageData(source, self.camera.x, self.camera.y)
+            //   self.camera.ctx.putImageData(source, 0, 0)
+            // }
+            // else
             if (this.blade.data.length > 0){
               img.onload = function(){
                 self.ctx.drawImage(img, self.camera.x, self.camera.y)

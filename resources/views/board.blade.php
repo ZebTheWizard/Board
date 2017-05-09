@@ -14,6 +14,9 @@
             <div id="mode-erase" class="section" v-on:click="setMode('erase')">
               <i class="fa fa-eraser" aria-hidden="true"></i>
             </div>
+            <div id="mode-pan" class="section" v-on:click="setMode('pan')">
+              <i class="fa fa-camera" aria-hidden="true"></i>
+            </div>
             @if(Auth::check() && $board->authUser->canEdit)
               <div id="mode-share" class="section" v-on:click="setMode('share')">
                 <i class="fa fa-link" aria-hidden="true"></i>

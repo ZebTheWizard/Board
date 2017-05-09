@@ -1,6 +1,5 @@
 module.exports = {
   Start: function (self, e, io=null) {
-    console.log(e);
     if (io) {
       self.public.x = io.x
       self.public.y = io.y
@@ -9,8 +8,16 @@ module.exports = {
       self.updateCanvas(e, io)
     }else {
       self.updateCanvas(e, io)
-      self.public.x = e.offsetX
-      self.public.y = e.offsetY
+
+      if(e.type == 'mousedown') {
+        self.public.x = e.offsetX
+        self.public.y = e.offsetY
+      }else {
+        var offset = $(self.canvas).offset()
+        self.public.x = e.touches[0].pageX - offset.left
+        self.public.y = e.touches[0].pageY - offset.top
+      }
+
       socket.emit('send:paint:Start', self.public)
     }
 
@@ -19,7 +26,6 @@ module.exports = {
     } else if (self.$parent.mode == 'erase') {
       self.public.blendMode = 'destination-out'
     }
-
     self.ctx.beginPath()
     self.ctx.moveTo(self.public.x, self.public.y)
 
@@ -33,8 +39,14 @@ module.exports = {
       self.ctx.globalCompositeOperation = io.blendMode
       self.camera.ctx.globalCompositeOperation = io.blendMode
     }else {
-      self.public.x = e.offsetX
-      self.public.y = e.offsetY
+      if(e.type == 'mousemove') {
+        self.public.x = e.offsetX
+        self.public.y = e.offsetY
+      }else {
+        var offset = $(self.canvas).offset()
+        self.public.x = e.touches[0].pageX - offset.left
+        self.public.y = e.touches[0].pageY - offset.top
+      }
       socket.emit('send:paint:ing', self.public)
     }
 
