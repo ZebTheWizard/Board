@@ -95,6 +95,12 @@ class boardController extends Controller
       return $b;
     }
 
+    public function clear (Request $r) {
+      // return $r->channel;
+      Redis::del($r->channel);
+      return;
+    }
+
     public function imageAPI ($username, $uuid) {
       $u = User::search($username);
       $b = Board::open($u->id, $uuid);

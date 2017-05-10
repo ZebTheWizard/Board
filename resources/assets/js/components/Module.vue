@@ -12,13 +12,10 @@
         <span class="pull-right" style="margin-right: 10px"><i class="fa fa-angle-down" aria-hidden="true"></i></span>
       </div>
       <div class="options" v-if="showOptions">
-          <li class="item">
-            <span class="choice">Rename</span>
+          <li class="item" v-on:click="open">
+            <span class="choice">Open</span>
           </li>
-          <li class="item">
-            <span class="choice">Share</span>
-          </li>
-          <li class="item danger">
+          <li class="item danger" v-if="obj.pivot.isOwner == 1">
             <span class="choice" v-on:click="remove">Delete</span>
           </li>
       </div>
@@ -66,6 +63,9 @@
           remove: function () {
             this.showOptions = false;
             axios.post('/board/delete', this.obj)
+            .then(res => {
+              console.log(res);
+            })
             this.$emit('remove')
           }
         }

@@ -1,23 +1,14 @@
 module.exports = {
   Start: function (self, e, io=null) {
     if (io) {
-      self.public.x = io.x
-      self.public.y = io.y
+      self.x = io.x
+      self.y = io.y
       self.public.color = io.color
       self.public.lineWidth = io.lineWidth
       self.updateCanvas(e, io)
     }else {
       self.updateCanvas(e, io)
-
-      if(e.type == 'mousedown') {
-        self.public.x = e.offsetX
-        self.public.y = e.offsetY
-      }else {
-        var offset = $(self.canvas).offset()
-        self.public.x = e.touches[0].pageX - offset.left
-        self.public.y = e.touches[0].pageY - offset.top
-      }
-
+      self.getCoord(e)
       socket.emit('send:paint:Start', self.public)
     }
 
@@ -27,34 +18,35 @@ module.exports = {
       self.public.blendMode = 'destination-out'
     }
     self.ctx.beginPath()
-    self.ctx.moveTo(self.public.x, self.public.y)
+    self.ctx.moveTo(self.x / self.scale, self.y / self.scale)
 
     self.camera.ctx.beginPath()
-    self.camera.ctx.moveTo(self.public.x, self.public.y)
+    self.camera.ctx.moveTo(self.x / self.scale, self.y / self.scale)
+    self.ctx.lineTo(self.x / self.scale, self.y / self.scale)
+    self.ctx.stroke()
+
+    self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale)
+    self.camera.ctx.stroke()
   },
   ing: function (self, e, io=null) {
     if (io) {
-      self.public.x = io.x
-      self.public.y = io.y
+      self.x = io.x
+      self.y = io.y
       self.ctx.globalCompositeOperation = io.blendMode
       self.camera.ctx.globalCompositeOperation = io.blendMode
     }else {
-      if(e.type == 'mousemove') {
-        self.public.x = e.offsetX
-        self.public.y = e.offsetY
-      }else {
-        var offset = $(self.canvas).offset()
-        self.public.x = e.touches[0].pageX - offset.left
-        self.public.y = e.touches[0].pageY - offset.top
-      }
+      self.getCoord(e)
       socket.emit('send:paint:ing', self.public)
     }
 
-    self.ctx.lineTo(self.public.x, self.public.y)
-    self.ctx.stroke()
+    // if (self.public.x <= self.width && self.public.x >=0 && self.public.y <= self.height && self.public.y >= 0) {
+      self.ctx.lineTo(self.x / self.scale, self.y / self.scale)
+      self.ctx.stroke()
 
-    self.camera.ctx.lineTo(self.public.x, self.public.y)
-    self.camera.ctx.stroke()
+      self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale)
+      self.camera.ctx.stroke()
+    // }
+
   },
   End: function (self, e, io=null) {
     self.ctx.closePath()

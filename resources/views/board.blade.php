@@ -14,6 +14,22 @@
             <div id="mode-erase" class="section" v-on:click="setMode('erase')">
               <i class="fa fa-eraser" aria-hidden="true"></i>
             </div>
+
+            <div id="mode-zoom-in" class="section" v-on:click="setMode('zoom-in')">
+              <i class="fa fa-search-plus" aria-hidden="true"></i>
+            </div>
+            <div id="mode-zoom-out" class="section" v-on:click="setMode('zoom-out')">
+              <i class="fa fa-search-minus" aria-hidden="true"></i>
+            </div>
+
+            <div id="mode-brush-minus" class="section" v-on:click="setMode('brush-minus')">
+              <i class="fa fa-circle " aria-hidden="true"></i>
+            </div>
+
+            <div id="mode-brush-plus" class="section" v-on:click="setMode('brush-plus')">
+              <i class="fa fa-circle fa-2x" aria-hidden="true"></i>
+            </div>
+
             <div id="mode-pan" class="section" v-on:click="setMode('pan')">
               <i class="fa fa-camera" aria-hidden="true"></i>
             </div>
@@ -22,6 +38,17 @@
                 <i class="fa fa-link" aria-hidden="true"></i>
               </div>
             @endif
+
+            @if(Auth::check() && $board->authUser->isOwner)
+              <div id="mode-clear" class="section" v-on:click="setMode('clear')">
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+              </div>
+            @endif
+
+
+
+
+
 
             <div id="mode-pick"class="section full">
               <div class="color-picker-wrapper">

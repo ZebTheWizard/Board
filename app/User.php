@@ -35,7 +35,7 @@ class User extends Authenticatable
     }
 
     public function boards() {
-      return $this->belongsToMany('App\Board')->withPivot('isOwner', 'canEdit')->withTrashed();
+      return $this->belongsToMany('App\Board')->withPivot('isOwner', 'canEdit');
     }
 
 

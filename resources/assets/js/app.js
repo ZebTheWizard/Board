@@ -101,12 +101,16 @@ const app = new Vue({
         this.color.primary = this.color.selected
       },
       setMode: function (mode) {
+        var lastmode = this.mode
         this.mode = mode;
+
+        if (mode == 'share')       {socket.emit('send:share');      this.mode = lastmode}
+        if (mode == 'brush-plus')  {socket.emit('send:brush-plus'); this.mode = lastmode}
+        if (mode == 'brush-minus') {socket.emit('send:brush-minus');this.mode = lastmode}
+        if (mode == 'clear')       {socket.emit('send:clear');      this.mode = lastmode}
+
         $('.toolbar .section').removeClass('selected')
-        $('#mode-' + mode).addClass('selected')
-        if (mode == 'share') {
-          socket.emit('send:share');
-        }
+        $('#mode-' + this.mode).addClass('selected')
       },
       toggleToolbar: function (option=null) {
         this.toolbarIsOpen = !this.toolbarIsOpen

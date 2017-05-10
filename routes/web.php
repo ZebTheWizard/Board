@@ -23,6 +23,7 @@ Route::post('/board/save', 'boardController@save');
 Route::post('/board/delete', 'boardController@delete');
 Route::post('/boards/get', 'boardController@boards');
 Route::post('/share', 'boardController@share');
+Route::post('/clear', 'boardController@clear');
 
 Route::get('/join/{username}/{share}', 'boardController@join');
 Route::get('/{owner}/{id}', 'boardController@get');
