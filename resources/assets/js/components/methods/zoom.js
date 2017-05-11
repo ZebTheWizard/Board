@@ -1,24 +1,23 @@
 var scale = function (self, e, factor) {
   var pt =  self.getCoord(e)
 
-  self.scale = self.scale * factor
-  self.descale = 1/self.scale
+  self.private.scale = self.private.scale * factor
 
-  self.data = self.camera.canvas.toDataURL('image/png')
+  self.private.data = self.private.camera.canvas.toDataURL('image/png')
 
-  // self.canvas.width  = self.width * self.scale
-  // self.canvas.height = self.height * self.scale
-  // console.log(self.canvas.width, self.canvas.height);
+  // self.private.canvas.width  = self.private.width * self.private.scale
+  // self.private.canvas.height = self.private.height * self.private.scale
+  // console.log(self.private.canvas.width, self.private.canvas.height);
 
   self.Clear()
 
-  // self.ctx.translate(pt.x, pt.y)
-  self.ctx.scale(factor, factor)
+  // self.private.ctx.translate(pt.x, pt.y)
+  self.private.ctx.scale(factor, factor)
 
 
-  // self.ctx.translate(-pt.x, -pt.y)
+  // self.private.ctx.translate(-pt.x, -pt.y)
 
-  self.redraw(self.data)
+  self.redraw(self.private.data)
 
 
 

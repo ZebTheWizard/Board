@@ -1,8 +1,8 @@
 module.exports = {
   Start: function (self, e, io=null) {
     if (io) {
-      self.x = io.x
-      self.y = io.y
+      self.private.x = io.x
+      self.private.y = io.y
       self.public.color = io.color
       self.public.lineWidth = io.lineWidth
       self.updateCanvas(e, io)
@@ -17,46 +17,46 @@ module.exports = {
     } else if (self.$parent.mode == 'erase') {
       self.public.blendMode = 'destination-out'
     }
-    self.ctx.beginPath()
-    self.ctx.moveTo(self.x / self.scale, self.y / self.scale)
+    self.private.ctx.beginPath()
+    self.private.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
 
-    self.camera.ctx.beginPath()
-    self.camera.ctx.moveTo(self.x / self.scale, self.y / self.scale)
-    self.ctx.lineTo(self.x / self.scale, self.y / self.scale)
-    self.ctx.stroke()
+    self.private.camera.ctx.beginPath()
+    self.private.camera.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
+    self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
+    self.private.ctx.stroke()
 
-    self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale)
-    self.camera.ctx.stroke()
+    self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
+    self.private.camera.ctx.stroke()
   },
   ing: function (self, e, io=null) {
     if (io) {
-      self.x = io.x
-      self.y = io.y
-      self.ctx.globalCompositeOperation = io.blendMode
-      self.camera.ctx.globalCompositeOperation = io.blendMode
+      self.private.x = io.x
+      self.private.y = io.y
+      self.private.ctx.globalCompositeOperation = io.blendMode
+      self.private.camera.ctx.globalCompositeOperation = io.blendMode
     }else {
       self.getCoord(e)
       socket.emit('send:paint:ing', self.public)
     }
 
-    // if (self.public.x <= self.width && self.public.x >=0 && self.public.y <= self.height && self.public.y >= 0) {
-      self.ctx.lineTo(self.x / self.scale, self.y / self.scale)
-      self.ctx.stroke()
+    // if (self.public.x <= self.private.width && self.public.x >=0 && self.public.y <= self.private.height && self.public.y >= 0) {
+      self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
+      self.private.ctx.stroke()
 
-      self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale)
-      self.camera.ctx.stroke()
+      self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
+      self.private.camera.ctx.stroke()
     // }
 
   },
   End: function (self, e, io=null) {
-    self.ctx.closePath()
-    self.camera.ctx.closePath()
-    self.data = self.camera.canvas.toDataURL('image/png')
+    self.private.ctx.closePath()
+    self.private.camera.ctx.closePath()
+    self.private.data = self.private.camera.canvas.toDataURL('image/png')
 
     if (!io) {
       socket.emit('send:save', {
         channel: self.public.channel,
-        data: self.data
+        data: self.private.data
       })
       axios.post('/board/save', {
           id: self.blade.owner,

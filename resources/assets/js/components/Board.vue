@@ -85,40 +85,42 @@
               channel: '',
               blendMode: 'source-over'
             },
-            x: '',
-            y: '',
-            id: '',
-            canvas: '',
-            width: 1920,
-            height: 1080,
-            ctx: '',
-            cssHeight: 0,
-            cssWidth: 0,
-            data: '',
-            scale: 1,
-            descale: 1,
-            camera: {
-              x: 0,
-              y: 0,
+            private: {
+              x: '',
+              y: '',
+              id: '',
               canvas: '',
-              ctx: ''
+              width: 1920,
+              height: 1080,
+              ctx: '',
+              cssHeight: 0,
+              cssWidth: 0,
+              data: '',
+              scale: 1,
+              camera: {
+                x: 0,
+                y: 0,
+                canvas: '',
+                ctx: ''
+              },
+              showShare: false,
+              showClear: false,
+              share: {
+                temp: '',
+                forever: '',
+              }
             },
-            showShare: false,
-            showClear: false,
-            share: {
-              temp: '',
-              forever: '',
-            }
+
           }
         },
         mounted() {
             this.public.channel = this.blade.owner + ':' + this.blade.uuid
-            this.id = this._uid
+            this.private.id = this._uid
             self = this
             self.updateCanvas()
             self.redraw(this.blade.data);
 
-            // console.log(self.canvas.bind);
+            // console.log(self.private.canvas.bind);
 
             self.$nextTick(function() {
               window.addEventListener('resize', self.resize, false)
@@ -145,24 +147,24 @@
 
         methods: {
           getKey: function (str){
-            if (str == 'forever') return window.location.origin + `/join/${self.blade.ownerUsername}/${self.share.forever}`
+            if (str == 'forever') return window.location.origin + `/join/${self.blade.ownerUsername}/${self.private.share.forever}`
             if (str == 'imageurl') return window.location.origin + `/i/${self.blade.ownerUsername}/${self.blade.uuid}`
           },
           toggleShare: function () {
-            if (!self.showShare) {
+            if (!self.private.showShare) {
               axios.post('/share', {
                 owner: self.blade.owner,
                 uuid: self.blade.uuid
               }).then(response => {
                 var b = response.data
-                self.share.temp = ''
-                self.share.forever = b.share
+                self.private.share.temp = ''
+                self.private.share.forever = b.share
               })
             }else {
-              self.share.temp = ''
-              self.share.forever = ''
+              self.private.share.temp = ''
+              self.private.share.forever = ''
             }
-            self.showShare = !self.showShare
+            self.private.showShare = !self.private.showShare
           },
 
           toggleClear: function (s=null) {
@@ -175,38 +177,38 @@
                 socket.emit('send:clear:confirm')
               })
             }
-            self.showClear = !self.showClear
+            self.private.showClear = !self.private.showClear
           },
 
           updateCanvas: function (e=null, io=null) {
             if (io == null) self.public.color = self.$parent.color.selected
             if (e) {
-              self.canvas = e.target
+              self.private.canvas = e.target
             }else {
-              self.canvas = document.getElementById('canvas-' + self.id)
+              self.private.canvas = document.getElementById('canvas-' + self.private.id)
             }
 
             //get context and canvas el
-            self.ctx = self.getContext(self.canvas)
-            self.camera.canvas = document.getElementById('camera-' + self.id)
-            self.camera.ctx = self.getContext(self.camera.canvas)
+            self.private.ctx = self.getContext(self.private.canvas)
+            self.private.camera.canvas = document.getElementById('camera-' + self.private.id)
+            self.private.camera.ctx = self.getContext(self.private.camera.canvas)
 
             //Bind or unbind canvas based on permissions
             if (self.blade.edit) {
-              self.canvas.bind()
+              self.private.canvas.bind()
             } else {
-              self.canvas.unbind()
+              self.private.canvas.unbind()
             }
           },
 
           resize: function(){
-            var ratio = self.height / self.width
-            self.cssWidth = self.canvas.clientWidth
-            self.cssHeight = $('.canvas-wrapper').width() * ratio
+            var ratio = self.private.height / self.private.width
+            self.private.cssWidth = self.private.canvas.clientWidth
+            self.private.cssHeight = $('.canvas-wrapper').width() * ratio
 
-            if (self.data) {
-              self.data = self.camera.canvas.toDataURL('image/png')
-              self.redraw(self.data);
+            if (self.private.data) {
+              self.private.data = self.private.camera.canvas.toDataURL('image/png')
+              self.redraw(self.private.data);
             }
           },
 
@@ -229,8 +231,8 @@
           redraw: function (source) {
             if (this.blade.data.length > 0){
               img.onload = function(){
-                self.ctx.drawImage(img, self.camera.x, self.camera.y)
-                self.camera.ctx.drawImage(img, 0,0)
+                self.private.ctx.drawImage(img, self.private.camera.x, self.private.camera.y)
+                self.private.camera.ctx.drawImage(img, 0,0)
               }
               img.src = source
 
@@ -250,21 +252,21 @@
           },
 
           Clear: function () {
-            self.ctx.clearRect(0, 0, 9999, 9999);
-            self.camera.ctx.clearRect(0, 0, self.width, self.height);
+            self.private.ctx.clearRect(0, 0, 9999, 9999);
+            self.private.camera.ctx.clearRect(0, 0, self.private.width, self.private.height);
           },
 
           getCoord: function (e) {
             if(e.type == 'mousedown' || e.type == 'mousemove') {
-              self.x = e.offsetX
-              self.y = e.offsetY
+              self.private.x = e.offsetX
+              self.private.y = e.offsetY
             }else {
-              var offset = $(self.canvas).offset()
-              self.x = (e.touches[0].pageX - offset.left)
-              self.y = (e.touches[0].pageY - offset.top)
+              var offset = $(self.private.canvas).offset()
+              self.private.x = (e.touches[0].pageX - offset.left)
+              self.private.y = (e.touches[0].pageY - offset.top)
             }
-            self.public.x = self.x / self.scale
-            self.public.y = self.y / self.scale
+            self.public.x = self.private.x / self.private.scale
+            self.public.y = self.private.y / self.private.scale
           },
 
           brushSize: function (t) {
@@ -279,8 +281,8 @@
         watch: {
           camera: {
             handler: function (val, oldVal) {
-              if (self.data) {
-                self.redraw(self.data);
+              if (self.private.data) {
+                self.redraw(self.private.data);
               }else {
                 self.redraw(self.blade.data)
               }
@@ -288,8 +290,8 @@
             deep: true
           },
           'public.blendMode': function () {
-            self.ctx = self.getContext(self.canvas)
-            self.camera.ctx = self.getContext(self.camera.canvas)
+            self.private.ctx = self.getContext(self.private.canvas)
+            self.private.camera.ctx = self.getContext(self.private.camera.canvas)
           }
         }
     }

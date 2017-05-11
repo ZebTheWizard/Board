@@ -1927,40 +1927,42 @@ var zoom = __webpack_require__(36);
         channel: '',
         blendMode: 'source-over'
       },
-      x: '',
-      y: '',
-      id: '',
-      canvas: '',
-      width: 1920,
-      height: 1080,
-      ctx: '',
-      cssHeight: 0,
-      cssWidth: 0,
-      data: '',
-      scale: 1,
-      descale: 1,
-      camera: {
-        x: 0,
-        y: 0,
+      private: {
+        x: '',
+        y: '',
+        id: '',
         canvas: '',
-        ctx: ''
-      },
-      showShare: false,
-      showClear: false,
-      share: {
-        temp: '',
-        forever: ''
+        width: 1920,
+        height: 1080,
+        ctx: '',
+        cssHeight: 0,
+        cssWidth: 0,
+        data: '',
+        scale: 1,
+        camera: {
+          x: 0,
+          y: 0,
+          canvas: '',
+          ctx: ''
+        },
+        showShare: false,
+        showClear: false,
+        share: {
+          temp: '',
+          forever: ''
+        }
       }
+
     };
   },
   mounted: function mounted() {
     this.public.channel = this.blade.owner + ':' + this.blade.uuid;
-    this.id = this._uid;
+    this.private.id = this._uid;
     self = this;
     self.updateCanvas();
     self.redraw(this.blade.data);
 
-    // console.log(self.canvas.bind);
+    // console.log(self.private.canvas.bind);
 
     self.$nextTick(function () {
       window.addEventListener('resize', self.resize, false);
@@ -1994,24 +1996,24 @@ var zoom = __webpack_require__(36);
 
   methods: {
     getKey: function getKey(str) {
-      if (str == 'forever') return window.location.origin + ('/join/' + self.blade.ownerUsername + '/' + self.share.forever);
+      if (str == 'forever') return window.location.origin + ('/join/' + self.blade.ownerUsername + '/' + self.private.share.forever);
       if (str == 'imageurl') return window.location.origin + ('/i/' + self.blade.ownerUsername + '/' + self.blade.uuid);
     },
     toggleShare: function toggleShare() {
-      if (!self.showShare) {
+      if (!self.private.showShare) {
         axios.post('/share', {
           owner: self.blade.owner,
           uuid: self.blade.uuid
         }).then(function (response) {
           var b = response.data;
-          self.share.temp = '';
-          self.share.forever = b.share;
+          self.private.share.temp = '';
+          self.private.share.forever = b.share;
         });
       } else {
-        self.share.temp = '';
-        self.share.forever = '';
+        self.private.share.temp = '';
+        self.private.share.forever = '';
       }
-      self.showShare = !self.showShare;
+      self.private.showShare = !self.private.showShare;
     },
 
     toggleClear: function toggleClear() {
@@ -2026,7 +2028,7 @@ var zoom = __webpack_require__(36);
           socket.emit('send:clear:confirm');
         });
       }
-      self.showClear = !self.showClear;
+      self.private.showClear = !self.private.showClear;
     },
 
     updateCanvas: function updateCanvas() {
@@ -2035,32 +2037,32 @@ var zoom = __webpack_require__(36);
 
       if (io == null) self.public.color = self.$parent.color.selected;
       if (e) {
-        self.canvas = e.target;
+        self.private.canvas = e.target;
       } else {
-        self.canvas = document.getElementById('canvas-' + self.id);
+        self.private.canvas = document.getElementById('canvas-' + self.private.id);
       }
 
       //get context and canvas el
-      self.ctx = self.getContext(self.canvas);
-      self.camera.canvas = document.getElementById('camera-' + self.id);
-      self.camera.ctx = self.getContext(self.camera.canvas);
+      self.private.ctx = self.getContext(self.private.canvas);
+      self.private.camera.canvas = document.getElementById('camera-' + self.private.id);
+      self.private.camera.ctx = self.getContext(self.private.camera.canvas);
 
       //Bind or unbind canvas based on permissions
       if (self.blade.edit) {
-        self.canvas.bind();
+        self.private.canvas.bind();
       } else {
-        self.canvas.unbind();
+        self.private.canvas.unbind();
       }
     },
 
     resize: function resize() {
-      var ratio = self.height / self.width;
-      self.cssWidth = self.canvas.clientWidth;
-      self.cssHeight = $('.canvas-wrapper').width() * ratio;
+      var ratio = self.private.height / self.private.width;
+      self.private.cssWidth = self.private.canvas.clientWidth;
+      self.private.cssHeight = $('.canvas-wrapper').width() * ratio;
 
-      if (self.data) {
-        self.data = self.camera.canvas.toDataURL('image/png');
-        self.redraw(self.data);
+      if (self.private.data) {
+        self.private.data = self.private.camera.canvas.toDataURL('image/png');
+        self.redraw(self.private.data);
       }
     },
 
@@ -2089,8 +2091,8 @@ var zoom = __webpack_require__(36);
     redraw: function redraw(source) {
       if (this.blade.data.length > 0) {
         img.onload = function () {
-          self.ctx.drawImage(img, self.camera.x, self.camera.y);
-          self.camera.ctx.drawImage(img, 0, 0);
+          self.private.ctx.drawImage(img, self.private.camera.x, self.private.camera.y);
+          self.private.camera.ctx.drawImage(img, 0, 0);
         };
         img.src = source;
       }
@@ -2108,21 +2110,21 @@ var zoom = __webpack_require__(36);
     },
 
     Clear: function Clear() {
-      self.ctx.clearRect(0, 0, 9999, 9999);
-      self.camera.ctx.clearRect(0, 0, self.width, self.height);
+      self.private.ctx.clearRect(0, 0, 9999, 9999);
+      self.private.camera.ctx.clearRect(0, 0, self.private.width, self.private.height);
     },
 
     getCoord: function getCoord(e) {
       if (e.type == 'mousedown' || e.type == 'mousemove') {
-        self.x = e.offsetX;
-        self.y = e.offsetY;
+        self.private.x = e.offsetX;
+        self.private.y = e.offsetY;
       } else {
-        var offset = $(self.canvas).offset();
-        self.x = e.touches[0].pageX - offset.left;
-        self.y = e.touches[0].pageY - offset.top;
+        var offset = $(self.private.canvas).offset();
+        self.private.x = e.touches[0].pageX - offset.left;
+        self.private.y = e.touches[0].pageY - offset.top;
       }
-      self.public.x = self.x / self.scale;
-      self.public.y = self.y / self.scale;
+      self.public.x = self.private.x / self.private.scale;
+      self.public.y = self.private.y / self.private.scale;
     },
 
     brushSize: function brushSize(t) {
@@ -2135,8 +2137,8 @@ var zoom = __webpack_require__(36);
   watch: {
     camera: {
       handler: function handler(val, oldVal) {
-        if (self.data) {
-          self.redraw(self.data);
+        if (self.private.data) {
+          self.redraw(self.private.data);
         } else {
           self.redraw(self.blade.data);
         }
@@ -2144,8 +2146,8 @@ var zoom = __webpack_require__(36);
       deep: true
     },
     'public.blendMode': function publicBlendMode() {
-      self.ctx = self.getContext(self.canvas);
-      self.camera.ctx = self.getContext(self.camera.canvas);
+      self.private.ctx = self.getContext(self.private.canvas);
+      self.private.camera.ctx = self.getContext(self.private.camera.canvas);
     }
   }
 });
@@ -2388,8 +2390,8 @@ module.exports = {
     var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
     if (io) {
-      self.x = io.x;
-      self.y = io.y;
+      self.private.x = io.x;
+      self.private.y = io.y;
       self.public.color = io.color;
       self.public.lineWidth = io.lineWidth;
       self.updateCanvas(e, io);
@@ -2404,49 +2406,49 @@ module.exports = {
     } else if (self.$parent.mode == 'erase') {
       self.public.blendMode = 'destination-out';
     }
-    self.ctx.beginPath();
-    self.ctx.moveTo(self.x / self.scale, self.y / self.scale);
+    self.private.ctx.beginPath();
+    self.private.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
 
-    self.camera.ctx.beginPath();
-    self.camera.ctx.moveTo(self.x / self.scale, self.y / self.scale);
-    self.ctx.lineTo(self.x / self.scale, self.y / self.scale);
-    self.ctx.stroke();
+    self.private.camera.ctx.beginPath();
+    self.private.camera.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
+    self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
+    self.private.ctx.stroke();
 
-    self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale);
-    self.camera.ctx.stroke();
+    self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
+    self.private.camera.ctx.stroke();
   },
   ing: function ing(self, e) {
     var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
     if (io) {
-      self.x = io.x;
-      self.y = io.y;
-      self.ctx.globalCompositeOperation = io.blendMode;
-      self.camera.ctx.globalCompositeOperation = io.blendMode;
+      self.private.x = io.x;
+      self.private.y = io.y;
+      self.private.ctx.globalCompositeOperation = io.blendMode;
+      self.private.camera.ctx.globalCompositeOperation = io.blendMode;
     } else {
       self.getCoord(e);
       socket.emit('send:paint:ing', self.public);
     }
 
-    // if (self.public.x <= self.width && self.public.x >=0 && self.public.y <= self.height && self.public.y >= 0) {
-    self.ctx.lineTo(self.x / self.scale, self.y / self.scale);
-    self.ctx.stroke();
+    // if (self.public.x <= self.private.width && self.public.x >=0 && self.public.y <= self.private.height && self.public.y >= 0) {
+    self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
+    self.private.ctx.stroke();
 
-    self.camera.ctx.lineTo(self.x / self.scale, self.y / self.scale);
-    self.camera.ctx.stroke();
+    self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale);
+    self.private.camera.ctx.stroke();
     // }
   },
   End: function End(self, e) {
     var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
-    self.ctx.closePath();
-    self.camera.ctx.closePath();
-    self.data = self.camera.canvas.toDataURL('image/png');
+    self.private.ctx.closePath();
+    self.private.camera.ctx.closePath();
+    self.private.data = self.private.camera.canvas.toDataURL('image/png');
 
     if (!io) {
       socket.emit('send:save', {
         channel: self.public.channel,
-        data: self.data
+        data: self.private.data
       });
       axios.post('/board/save', {
         id: self.blade.owner,
@@ -2463,23 +2465,22 @@ module.exports = {
 var scale = function scale(self, e, factor) {
   var pt = self.getCoord(e);
 
-  self.scale = self.scale * factor;
-  self.descale = 1 / self.scale;
+  self.private.scale = self.private.scale * factor;
 
-  self.data = self.camera.canvas.toDataURL('image/png');
+  self.private.data = self.private.camera.canvas.toDataURL('image/png');
 
-  // self.canvas.width  = self.width * self.scale
-  // self.canvas.height = self.height * self.scale
-  // console.log(self.canvas.width, self.canvas.height);
+  // self.private.canvas.width  = self.private.width * self.private.scale
+  // self.private.canvas.height = self.private.height * self.private.scale
+  // console.log(self.private.canvas.width, self.private.canvas.height);
 
   self.Clear();
 
-  // self.ctx.translate(pt.x, pt.y)
-  self.ctx.scale(factor, factor);
+  // self.private.ctx.translate(pt.x, pt.y)
+  self.private.ctx.scale(factor, factor);
 
-  // self.ctx.translate(-pt.x, -pt.y)
+  // self.private.ctx.translate(-pt.x, -pt.y)
 
-  self.redraw(self.data);
+  self.redraw(self.private.data);
 };
 
 module.exports = {
