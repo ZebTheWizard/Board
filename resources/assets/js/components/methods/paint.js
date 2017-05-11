@@ -1,66 +1,81 @@
+var Private
+var Public
+var Self
+var Misc
+
+var l = function (S) {
+  Self = S
+  Private = S.Private
+  Public = S.Public
+  Misc = require('./Misc.js'); Misc.Load(Self)
+}
+
 module.exports = {
-  Start: function (self, e, io=null) {
-    if (io) {
-      self.private.x = io.x
-      self.private.y = io.y
-      self.public.color = io.color
-      self.public.lineWidth = io.lineWidth
-      self.updateCanvas(e, io)
-    }else {
-      self.updateCanvas(e, io)
-      self.getCoord(e)
-      socket.emit('send:paint:Start', self.public)
-    }
-
-    if (self.$parent.mode == 'paint') {
-      self.public.blendMode = 'source-over'
-    } else if (self.$parent.mode == 'erase') {
-      self.public.blendMode = 'destination-out'
-    }
-    self.private.ctx.beginPath()
-    self.private.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-
-    self.private.camera.ctx.beginPath()
-    self.private.camera.ctx.moveTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-    self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-    self.private.ctx.stroke()
-
-    self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-    self.private.camera.ctx.stroke()
+  Load: function (Self) {
+    l(Self)
   },
-  ing: function (self, e, io=null) {
+  Start: function (Self, e, io=null) {
     if (io) {
-      self.private.x = io.x
-      self.private.y = io.y
-      self.private.ctx.globalCompositeOperation = io.blendMode
-      self.private.camera.ctx.globalCompositeOperation = io.blendMode
+      Private.x = io.x
+      Private.y = io.y
+      Public.color = io.color
+      Public.lineWidth = io.lineWidth
+      Self.updateCanvas(e, io)
     }else {
-      self.getCoord(e)
-      socket.emit('send:paint:ing', self.public)
+      Self.updateCanvas(e, io)
+      Misc.getCoord(e)
+      socket.emit('send:paint:Start', Public)
     }
 
-    // if (self.public.x <= self.private.width && self.public.x >=0 && self.public.y <= self.private.height && self.public.y >= 0) {
-      self.private.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-      self.private.ctx.stroke()
+    if (Self.$parent.mode == 'paint') {
+      Public.blendMode = 'source-over'
+    } else if (Self.$parent.mode == 'erase') {
+      Public.blendMode = 'destination-out'
+    }
+    Private.ctx.beginPath()
+    Private.ctx.moveTo(Private.x / Private.scale, Private.y / Private.scale)
 
-      self.private.camera.ctx.lineTo(self.private.x / self.private.scale, self.private.y / self.private.scale)
-      self.private.camera.ctx.stroke()
+    Private.camera.ctx.beginPath()
+    Private.camera.ctx.moveTo(Private.x / Private.scale, Private.y / Private.scale)
+    Private.ctx.lineTo(Private.x / Private.scale, Private.y / Private.scale)
+    Private.ctx.stroke()
+
+    Private.camera.ctx.lineTo(Private.x / Private.scale, Private.y / Private.scale)
+    Private.camera.ctx.stroke()
+  },
+  ing: function (Self, e, io=null) {
+    if (io) {
+      Private.x = io.x
+      Private.y = io.y
+      Private.ctx.globalCompositeOperation = io.blendMode
+      Private.camera.ctx.globalCompositeOperation = io.blendMode
+    }else {
+      Misc.getCoord(e)
+      socket.emit('send:paint:ing', Public)
+    }
+
+    // if (Public.x <= Private.width && Public.x >=0 && Public.y <= Private.height && Public.y >= 0) {
+      Private.ctx.lineTo(Private.x / Private.scale, Private.y / Private.scale)
+      Private.ctx.stroke()
+
+      Private.camera.ctx.lineTo(Private.x / Private.scale, Private.y / Private.scale)
+      Private.camera.ctx.stroke()
     // }
 
   },
-  End: function (self, e, io=null) {
-    self.private.ctx.closePath()
-    self.private.camera.ctx.closePath()
-    self.private.data = self.private.camera.canvas.toDataURL('image/png')
+  End: function (Self, e, io=null) {
+    Private.ctx.closePath()
+    Private.camera.ctx.closePath()
+    Private.data = Private.camera.canvas.toDataURL('image/png')
 
     if (!io) {
       socket.emit('send:save', {
-        channel: self.public.channel,
-        data: self.private.data
+        channel: Public.channel,
+        data: Private.data
       })
       axios.post('/board/save', {
-          id: self.blade.owner,
-          uuid: self.blade.uuid
+          id: Self.blade.owner,
+          uuid: Self.blade.uuid
       })
     }
 

@@ -1,33 +1,48 @@
-var scale = function (self, e, factor) {
-  var pt =  self.getCoord(e)
+var Private
+var Public
+var Self
+var Misc
 
-  self.private.scale = self.private.scale * factor
+var l = function (S) {
+  Self = S
+  Private = S.Private
+  Public = S.Public
+  Misc = require('./Misc.js'); Misc.Load(Self)
+}
 
-  self.private.data = self.private.camera.canvas.toDataURL('image/png')
+var scale = function (Self, e, factor) {
+  var pt =  Misc.getCoord(e)
 
-  // self.private.canvas.width  = self.private.width * self.private.scale
-  // self.private.canvas.height = self.private.height * self.private.scale
-  // console.log(self.private.canvas.width, self.private.canvas.height);
+  Private.scale = Private.scale * factor
 
-  self.Clear()
+  Private.data = Private.camera.canvas.toDataURL('image/png')
 
-  // self.private.ctx.translate(pt.x, pt.y)
-  self.private.ctx.scale(factor, factor)
+  // Private.canvas.width  = Private.width * Private.scale
+  // Private.canvas.height = Private.height * Private.scale
+  // console.log(Private.canvas.width, Private.canvas.height);
+
+  Misc.Clear()
+
+  // Private.ctx.translate(pt.x, pt.y)
+  Private.ctx.scale(factor, factor)
 
 
-  // self.private.ctx.translate(-pt.x, -pt.y)
+  // Private.ctx.translate(-pt.x, -pt.y)
 
-  self.redraw(self.private.data)
+  Misc.redraw(Private.data)
 
 
 
 }
 
 module.exports = {
-  In: function (self, e, io=null) {
-    scale(self, e, 1.25)
+  Load: function (Self) {
+    l(Self)
   },
-  Out: function (self, e, io=null) {
-    scale(self, e, 0.8)
+  In: function (Self, e, io=null) {
+    scale(Self, e, 1.25)
+  },
+  Out: function (Self, e, io=null) {
+    scale(Self, e, 0.8)
   }
 }
