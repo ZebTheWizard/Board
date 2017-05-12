@@ -106,4 +106,8 @@ class boardController extends Controller
       $b = Board::open($u->id, $uuid);
       return Image::make(public_path($b->image))->response('png');
     }
+
+    // public function user () {
+    //   Redis::hset()
+    // }
 }

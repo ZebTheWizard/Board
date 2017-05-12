@@ -27,6 +27,7 @@
     "vue-loading-spinner": "^1.0.7",
     "vue-multiselect": "^1.1.4",
     "vue-socket.io": "^2.1.1-a",
-    "vue-spinner": "^1.0.2"
+    "vue-spinner": "^1.0.2",
+    "vuedraggable": "^2.11.0"
   }
 }

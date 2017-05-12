@@ -6,6 +6,7 @@ var l = function (S) {
   Self = S
   Private = S.Private
   Public = S.Public
+  Parent = S.$parent
 }
 
 module.exports = {
@@ -19,16 +20,20 @@ module.exports = {
   },
 
   getCoord: function (e) {
+    var x, y
     if(e.type == 'mousedown' || e.type == 'mousemove') {
-      Private.x = e.offsetX
-      Private.y = e.offsetY
+      x = e.offsetX
+      y = e.offsetY
     }else {
       var offset = $(Private.canvas).offset()
-      Private.x = (e.touches[0].pageX - offset.left)
-      Private.y = (e.touches[0].pageY - offset.top)
+      x = (e.touches[0].pageX - offset.left)
+      y = (e.touches[0].pageY - offset.top)
     }
-    Public.x = Private.x / Private.scale
-    Public.y = Private.y / Private.scale
+    return {
+      x: x / Private.scale,
+      y: y / Private.scale
+    }
+
   },
 
   redraw: function (source) {
@@ -46,11 +51,11 @@ module.exports = {
   getContext: function (el) {
     var ctx = el.getContext("2d")
     ctx.fillStyle = "solid"
-    ctx.strokeStyle = Public.color
-    ctx.lineWidth = Public.lineWidth
+    // ctx.strokeStyle = Public.color
+    ctx.lineWidth = 21
     ctx.lineCap = "round"
     ctx.lineJoin = "round"
-    ctx.globalCompositeOperation = Public.blendMode;
+    // ctx.globalCompositeOperation = Public.blendMode;
     return ctx;
   },
 

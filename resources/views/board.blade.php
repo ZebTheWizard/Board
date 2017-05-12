@@ -76,6 +76,7 @@
                 owner:'{{$board->owner}}',
                 data: '{{$board->imageData}}',
                 ownerUsername: '{{\App\User::find($board->owner)->username}}',
+                user: '{{Auth::user()->username}}',
                 edit: true
               }"></board>
             @else
@@ -83,6 +84,7 @@
               uuid: '{{$board->uuid}}',
               owner:'{{$board->owner}}',
               data: '{{$board->imageData}}',
+              user: false,
               edit: false
             }"></board>
             @endif

@@ -20,6 +20,7 @@ Vue.use(VueSocketio, window.socketURL);
 Vue.component('board', require('./components/Board.vue'));
 Vue.component('module', require('./components/Module.vue'));
 Vue.component('picker', require('./components/Picker.vue'));
+Vue.component('canv', require('./components/Canvas.vue'));
 
 Vue.directive('drag', {
   bind: (el, binding, vnode) => {

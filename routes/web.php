@@ -25,6 +25,8 @@ Route::post('/boards/get', 'boardController@boards');
 Route::post('/share', 'boardController@share');
 Route::post('/clear', 'boardController@clear');
 
+// Route::post('/board/user', 'boardController@user');
+
 Route::get('/join/{username}/{share}', 'boardController@join');
 Route::get('/{owner}/{id}', 'boardController@get');
 
