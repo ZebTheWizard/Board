@@ -52,7 +52,7 @@ io.on('connection', function (socket) {
   socket.on('send:brush-plus', function () {socket.emit('show:brush-plus');})
   socket.on('send:brush-minus', function () {socket.emit('show:brush-minus');})
   socket.on('send:clear', function () {socket.emit('show:clear');})
-  socket.on('send:clear:confirm', function () {socket.broadcast.emit('show:clear:confirm');console.log('clear:confirm');})
+  socket.on('send:clear:confirm', function (data) {socket.broadcast.emit(`show:clear:confirm:${data.channel}`)})
 });
 
 // when the socket server starts

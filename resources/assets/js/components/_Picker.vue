@@ -33,7 +33,6 @@
         },
         mounted() {
           // window.addEventListener('mousedown', (e) => {
-          //   console.log(e.target);
           //   if (this.isOpen) this.toggle()
           // })
 

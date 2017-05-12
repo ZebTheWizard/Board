@@ -21,6 +21,7 @@ Vue.component('board', require('./components/Board.vue'));
 Vue.component('module', require('./components/Module.vue'));
 Vue.component('picker', require('./components/Picker.vue'));
 Vue.component('canv', require('./components/Canvas.vue'));
+Vue.component('mode', require('./components/Mode.vue'));
 
 Vue.directive('drag', {
   bind: (el, binding, vnode) => {
@@ -75,7 +76,37 @@ const app = new Vue({
       toolbarOffset: 0,
       toolbarIsOpen: true,
       toolbarWidth: 100,
-      boards: {}
+      boards: {},
+      modes: [
+        {
+          mode: 'paint',
+          icon: 'paint-brush'
+        },
+        {
+          mode: 'erase',
+          icon: 'eraser'
+        },
+        // {
+        //   mode: 'zoom-in',
+        //   icon: 'search-plus'
+        // },
+        // {
+        //   mode: 'zoom-out',
+        //   icon: 'search-minus'
+        // },
+        {
+          mode: 'brush-minus',
+          icon: 'circle'
+        },
+        {
+          mode: 'brush-plus',
+          icon: 'circle fa-2x'
+        },
+        {
+          mode: 'pan',
+          icon: 'camera'
+        },
+      ],
     },
     mounted() {
       this.resize();
@@ -105,10 +136,7 @@ const app = new Vue({
         var lastmode = this.mode
         this.mode = mode;
 
-        if (mode == 'share')       {socket.emit('send:share');      this.mode = lastmode}
-        if (mode == 'brush-plus')  {socket.emit('send:brush-plus'); this.mode = lastmode}
-        if (mode == 'brush-minus') {socket.emit('send:brush-minus');this.mode = lastmode}
-        if (mode == 'clear')       {socket.emit('send:clear');      this.mode = lastmode}
+
 
         $('.toolbar .section').removeClass('selected')
         $('#mode-' + this.mode).addClass('selected')
@@ -131,7 +159,6 @@ const app = new Vue({
         if ($('#navbar-toolbar-caller').length) {
           $('#navbar-toolbar-toggle').hide()
         }
-        // console.log();
       }
     },
     computed: {

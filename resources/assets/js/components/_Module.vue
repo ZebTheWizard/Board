@@ -63,9 +63,6 @@
           remove: function () {
             this.showOptions = false;
             axios.post('/board/delete', this.obj)
-            .then(res => {
-              console.log(res);
-            })
             this.$emit('remove')
           }
         }

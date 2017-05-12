@@ -14,6 +14,13 @@ module.exports = {
     l(Self)
   },
   draw: function (obj){
+
+    try {
+      Self.update(obj.prop.user)
+    } catch (e) {
+      Self.update(Private.prop.user)
+    }
+
     Private.ctx.beginPath()
     Private.ctx.moveTo(obj.last.x, obj.last.y)
     Private.ctx.lineTo(obj.current.x, obj.current.y)
@@ -44,7 +51,7 @@ module.exports = {
     }
   },
   Start: function (e) {
-    // console.log(Private.camera);
+
     var pos = Misc.getCoord(e)
 
     var d = this.draw({

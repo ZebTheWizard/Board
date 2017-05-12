@@ -19,7 +19,6 @@ var scale = function (Self, e, factor) {
 
   // Private.canvas.width  = Private.width * Private.scale
   // Private.canvas.height = Private.height * Private.scale
-  // console.log(Private.canvas.width, Private.canvas.height);
 
   Misc.Clear()
 

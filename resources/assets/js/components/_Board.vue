@@ -134,8 +134,6 @@
             Self.updateCanvas()
             Misc.redraw(this.blade.data);
 
-            // console.log(Private.canvas.bind);
-
             Self.$nextTick(function() {
               window.addEventListener('resize', Self.resize, false)
               window.addEventListener('orientationchange', Self.resize, false)

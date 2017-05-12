@@ -7,8 +7,12 @@
         <!-- Side Bar -->
 
           <div class="toolbar" :style="{width: toolbarWidth+'px'}" v-if='toolbarIsOpen'>
-
-            <div id="mode-paint" class="section" v-on:click="setMode('paint')">
+            <mode v-for="(mode, index) in modes"
+                  :mode="mode.mode"
+                  :icon="mode.icon"
+                  :key="mode.id">
+            </mode>
+            <!-- <div id="mode-paint" class="section" v-on:click="setMode('paint')">
               <i class="fa fa-paint-brush" aria-hidden="true"></i>
             </div>
             <div id="mode-erase" class="section" v-on:click="setMode('erase')">
@@ -33,6 +37,14 @@
             <div id="mode-pan" class="section" v-on:click="setMode('pan')">
               <i class="fa fa-camera" aria-hidden="true"></i>
             </div>
+
+
+
+
+
+
+             -->
+
             @if(Auth::check() && $board->authUser->canEdit)
               <div id="mode-share" class="section" v-on:click="setMode('share')">
                 <i class="fa fa-link" aria-hidden="true"></i>
@@ -44,11 +56,6 @@
                 <i class="fa fa-trash-o" aria-hidden="true"></i>
               </div>
             @endif
-
-
-
-
-
 
             <div id="mode-pick"class="section full">
               <div class="color-picker-wrapper">

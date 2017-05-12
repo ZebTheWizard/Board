@@ -37,65 +37,64 @@ module.exports = {
   },
 
   redraw: function (source) {
-    if (Self.blade.data.length > 0){
+    if (Self.$parent.blade.data.length > 0){
       Self.img.onload = function(){
         Private.ctx.drawImage(Self.img, Private.camera.x, Private.camera.y)
         Private.camera.ctx.drawImage(Self.img, 0,0)
       }
       Self.img.src = source
-
-
     }
   },
 
-  getContext: function (el) {
+  getContext: function (el, obj) {
     var ctx = el.getContext("2d")
     ctx.fillStyle = "solid"
-    // ctx.strokeStyle = Public.color
-    ctx.lineWidth = 21
+    ctx.strokeStyle = obj.color
+    ctx.lineWidth = obj.lineWidth
     ctx.lineCap = "round"
     ctx.lineJoin = "round"
-    // ctx.globalCompositeOperation = Public.blendMode;
+    ctx.globalCompositeOperation = obj.blendMode
     return ctx;
   },
 
   getKey: function (str){
-    if (str == 'forever') return window.location.origin + `/join/${Self.blade.ownerUsername}/${Private.share.forever}`
-    if (str == 'imageurl') return window.location.origin + `/i/${Self.blade.ownerUsername}/${Self.blade.uuid}`
+    if (str == 'forever') return window.location.origin + `/join/${Parent.Public.ownerUsername}/${Parent.Public.uuid}`
+    if (str == 'imageurl') return window.location.origin + `/i/${Parent.Public.ownerUsername}/${Parent.Public.uuid}`
   },
   toggleShare: function () {
     if (!Private.showShare) {
       axios.post('/share', {
-        owner: Self.blade.owner,
-        uuid: Self.blade.uuid
+        owner: Parent.Public.owner,
+        uuid: Parent.Public.uuid
       }).then(response => {
         var b = response.data
-        Private.share.temp = ''
-        Private.share.forever = b.share
+        Parent.Public.temp = ''
+        Parent.Public.forever = b.share
       })
-    }else {
-      Private.share.temp = ''
-      Private.share.forever = ''
     }
-    Private.showShare = !Private.showShare
+    else {
+      Parent.Public.temp = ''
+      Parent.Public.forever = ''
+    }
+    Parent.$parent.setMode('share')
   },
 
   toggleClear: function (s=null) {
     if (s == 'submit') {
       this.Clear()
       axios.post('/clear', {
-        channel: Public.channel
+        channel: Parent.Public.channel
       }).then(response => {
         this.Clear()
-        socket.emit('send:clear:confirm')
+        socket.emit('send:clear:confirm', Parent.Public)
       })
     }
-    Private.showClear = !Private.showClear
+    Parent.$parent.setMode('clear')
   },
 
-  brushSize: function (t) {
-    if (t == '-' && Public.lineWidth >= 6) Public.lineWidth -= 5
-    if (t == '+' && Public.lineWidth <= 206) Public.lineWidth += 5
+  brushSize: function (Self, t) {
+    if (t == '-' && Self.Public.user.lineWidth >= 6) Self.Public.user.lineWidth -= 5
+    if (t == '+' && Self.Public.user.lineWidth <= 206) Self.Public.user.lineWidth += 5
   }
 
 }
